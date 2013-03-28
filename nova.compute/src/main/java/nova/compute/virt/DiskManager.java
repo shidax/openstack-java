@@ -53,9 +53,10 @@ public class DiskManager {
 		BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(out));
 		BufferedInputStream inputStream = new BufferedInputStream(stream);
 		try {
-			byte[] buffer = new byte[CHUNK];
-			while (inputStream.read(buffer) >= 0) {
-				outputStream.write(buffer);
+//			byte[] buffer = new byte[CHUNK];
+			int b;
+			while ((b = inputStream.read()) >= 0) {
+				outputStream.write(b);
 			}
 			outputStream.flush();
 		} catch (IOException e) {

@@ -9,15 +9,15 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import nova.compute.exception.ConfigurationException;
+import nova.compute.exception.ServiceException;
+import nova.compute.model.Image;
 import nova.compute.rpc.ConductorRpcAPI;
 import nova.compute.rpc.ConnectionProxy;
 import nova.compute.rpc.ReplyMessage;
+import nova.compute.services.GlanceService;
 import nova.compute.virt.DiskManager;
 import nova.compute.virt.VirtualMachineManager;
-
-import org.openstack.glance.GlanceClient;
-import org.openstack.glance.api.DownloadImage;
-import org.openstack.glance.model.ImageDownload;
 
 /**
  * @author shida
@@ -65,25 +65,24 @@ public class ComputeManager {
 	}
 
 	public void runInstance(Context context, Map<String, Object> message)
-			throws IOException {
+			throws IOException, ConfigurationException, ServiceException {
 		// TODO This is temporary code.
 		// TODO Resolve glance endpoint from keystone.
 		Map<String, Object> args = (Map<String, Object>) message.get("args");
 		Map<String, Object> spec = (Map<String, Object>) args.get("request_spec");
 		Map<String, Object> image = (Map<String, Object>) spec.get("image");
 		Map<String, Object> instance = (Map<String, Object>) args.get("instance");
+		Map<String, Object> instanceType = (Map<String, Object>) spec.get("instance_type");
 		String imageId = (String) image.get("id");
 		String instanceId = (String) instance.get("uuid");
 		String name = (String) instance.get("hostname");
 		if (!diskManager.isCached(imageId)) {
-			GlanceClient client = new GlanceClient(config.getGlanceEndpoint(),
-					context.getAuthToken());
-			DownloadImage download = new DownloadImage(imageId);
-			ImageDownload downloadImage = client.execute(download);
+			GlanceService service = new GlanceService(context, config);
+			Image downloadImage = service.downloadImage(imageId);
 			diskManager.write(imageId,
-					downloadImage.getInputStream());
+					downloadImage.getBody());
 		}
-		virtualMachineManager.spawn(instanceId, name,
+		virtualMachineManager.spawn(instanceId, name, instanceType,
 				diskManager.getImagePath(imageId).toString());
 	}
 
