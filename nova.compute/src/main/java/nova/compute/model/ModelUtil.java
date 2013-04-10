@@ -16,4 +16,13 @@ public class ModelUtil {
 		}
 		return 0;
 	}
+	
+	public static long toLong(Object object) {
+		if (object instanceof Double) {
+			Double d = (Double) object;
+			return d.longValue();
+		}
+		return 0;
+	}
+
 }

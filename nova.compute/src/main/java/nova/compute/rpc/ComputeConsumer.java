@@ -74,6 +74,7 @@ public class ComputeConsumer extends QueueingConsumer implements Runnable {
 				logger.info("New message arrived. process it");
 				String contents = new String(delivery.getBody());
 				logger.info(contents);
+				System.out.println(contents);
 				Gson gson = new Gson();
 				Map<String, Object> message = gson.fromJson(contents, Map.class);
 				Context context = Context.unpackContext(message);

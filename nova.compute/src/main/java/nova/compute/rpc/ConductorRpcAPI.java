@@ -43,6 +43,16 @@ public class ConductorRpcAPI extends BasicRpcAPI {
 		return result.getResult();
 	}
 
+	public Map<String, Object> updateInstance(Context context, String uuid, Map<String, Object> updates) throws IOException, RpcException {
+		String version = "1.38";
+		Map<String, Object> body = new HashMap<String, Object>();
+		body.put("instance_uuid", uuid);
+		body.put("updates", updates);
+		Message message = this.createMessage(context, "instance_update", body, version);
+		CallResult result = this.call(message);
+		return result.getResult();
+	}
+	
 	public Map<String, Object> getInstanceByUUID(Context context, String uuid) throws IOException, RpcException {
 		String version = "1.24";
 		Map<String, Object> body = new HashMap<String, Object>();

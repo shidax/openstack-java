@@ -57,14 +57,18 @@ public class ComputeService implements Runnable {
 	 * Stop this service.
 	 */
 	public void stop() {
+		logger.info("Stop all services");
 		if (consumeThread != null) {
+			logger.info("Stop consumer thread");
 			consumeThread.interrupt();
 		}
 		if (timer != null) {
+			logger.info("Stop timer");
 			timer.cancel();
 		}
 		if (service != null) {
 			try {
+				logger.info("Destroy service.");
 				manager.getApi().destroyService(context, service);
 			} catch (IOException e) {
 				e.printStackTrace();

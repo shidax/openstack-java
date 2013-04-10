@@ -6,7 +6,6 @@ package nova.compute.virt;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import nova.compute.ComputeConfig;
 import nova.compute.model.Instance;
@@ -52,15 +51,18 @@ public class VirtualMachineManager {
 	 * @param name
 	 * @param imagePath
 	 */
-	public void spawn(String id, String name, Map<String, Object> instanceType, String imagePath) {
+	public void spawn_with_image(Instance instance, String imagePath) {
 		VirtualBoxManager manager = VirtualBoxManager.createInstance(null);
 		manager.connect(config.getVboxUrl(), config.getVboxUser(), config.getVboxPassword());
 		IVirtualBox vBox = manager.getVBox();
 		ISession session = manager.getSessionObject();
 		IMedium medium = vBox.openMedium(imagePath, DeviceType.HardDisk, AccessMode.ReadWrite, true);
-		IMachine machine = vBox.createMachine("", id, new ArrayList<String>(), "Linux", "");
-		machine.setName(name);
-		machine.setMemorySize(Double.valueOf(instanceType.get("memory_mb").toString()).longValue());
+		// TODO Control the medium to follow the instance type.
+		IMachine machine = vBox.createMachine("", instance.getName(), new ArrayList<String>(), "Linux", "");
+		machine.setName(instance.getHostName());
+		machine.setDescription(instance.getDisplayDescription());
+		machine.setMemorySize(instance.getMemoryMb());
+		machine.setCPUCount(instance.getVcpus());
 		machine.setVRAMSize(DEFAULT_VIDEO_MEMORY);
 		IStorageController controller = machine.addStorageController("IDE", StorageBus.IDE);
 		vBox.registerMachine(machine);

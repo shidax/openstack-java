@@ -8,10 +8,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import nova.compute.exception.ConfigurationException;
+import nova.compute.exception.RpcException;
 import nova.compute.exception.ServiceException;
 import nova.compute.model.Image;
+import nova.compute.model.Instance;
+import nova.compute.model.RequestSpec;
 import nova.compute.rpc.ConductorRpcAPI;
 import nova.compute.rpc.ConnectionProxy;
 import nova.compute.rpc.ReplyMessage;
@@ -24,6 +29,9 @@ import nova.compute.virt.VirtualMachineManager;
  * 
  */
 public class ComputeManager {
+
+	static final Logger logger = Logger.getLogger(ComputeManager.class
+			.getName());
 
 	private static Map<String, Method> METHODS = new HashMap<String, Method>();
 	static {
@@ -64,26 +72,52 @@ public class ComputeManager {
 		this.api = api;
 	}
 
+	private void updateInstanceState(Context context, Instance instance)
+			throws IOException, RpcException {
+		Map<String, Object> updates = new HashMap<String, Object>();
+		updates.put("vm_state", instance.getVmState());
+		updates.put("task_state", instance.getTaskState());
+		updates.put("power_state", instance.getPowerState());
+		api.updateInstance(context, instance.getUuid(), updates);
+	}
+
+	@SuppressWarnings("unchecked")
 	public void runInstance(Context context, Map<String, Object> message)
-			throws IOException, ConfigurationException, ServiceException {
+			throws IOException, ConfigurationException, ServiceException, RpcException {
 		// TODO This is temporary code.
 		// TODO Resolve glance endpoint from keystone.
+		logger.info("Start to runInstance");
 		Map<String, Object> args = (Map<String, Object>) message.get("args");
-		Map<String, Object> spec = (Map<String, Object>) args.get("request_spec");
-		Map<String, Object> image = (Map<String, Object>) spec.get("image");
-		Map<String, Object> instance = (Map<String, Object>) args.get("instance");
-		Map<String, Object> instanceType = (Map<String, Object>) spec.get("instance_type");
-		String imageId = (String) image.get("id");
-		String instanceId = (String) instance.get("uuid");
-		String name = (String) instance.get("hostname");
-		if (!diskManager.isCached(imageId)) {
+		RequestSpec spec = RequestSpec.fromMessage((Map<String, Object>) args
+				.get("request_spec"));
+		Instance instance = Instance.fromMessage((Map<String, Object>) args
+				.get("instance"));
+		Image image = spec.getImage();
+		instance.setImage(image);
+		logger.info("Change instance task_state to spawning");		
+		instance.setTaskState("spawning");
+		updateInstanceState(context, instance);
+		if (!diskManager.isCached(image.getId())) {
 			GlanceService service = new GlanceService(context, config);
-			Image downloadImage = service.downloadImage(imageId);
-			diskManager.write(imageId,
-					downloadImage.getBody());
+			Image downloadImage = service.downloadImage(image.getId());
+			diskManager.write(image.getId(), downloadImage.getBody());
 		}
-		virtualMachineManager.spawn(instanceId, name, instanceType,
-				diskManager.getImagePath(imageId).toString());
+		String imagePath = diskManager.getImagePath(image.getId()).toString();
+		String rootDisk = diskManager.createInstanceDirectory(imagePath,
+				instance.getName());
+		try {
+			virtualMachineManager.spawn_with_image(instance, rootDisk);
+			logger.info("Change instance vm_state to active");					
+			instance.setVmState("active");
+			instance.setTaskState(null);
+			updateInstanceState(context, instance);			
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Failed to spawn instance.", e);
+			instance.setVmState("error");
+			instance.setTaskState(null);
+			updateInstanceState(context, instance);
+			diskManager.clearInstanceDirectory(instance.getName());
+		}
 	}
 
 	public void terminateInstance(Context context, Map<String, Object> message) {
