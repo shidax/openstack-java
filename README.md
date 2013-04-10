@@ -15,6 +15,8 @@ Many of web engineer installed JRE on ther development machine, maybe.
 Imlementation
 ==============
 
+Version 0.0.1
+
 * Enable to launch VM on Virtual Box.
 * Enable to recored instance state.
 * Enable to recognize by OpenStack as a nova-compute
