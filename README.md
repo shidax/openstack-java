@@ -10,7 +10,7 @@ Why Java?
 
 There is a simple reason that it is just a study of OpenStack. And...
 
-Many of web engineer installed JRE on ther development machine, maybe.
+Many of web engineer installed JRE on their development machine, maybe.
 
 Imlementation
 ==============
