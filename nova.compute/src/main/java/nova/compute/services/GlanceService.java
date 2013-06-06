@@ -21,6 +21,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
+ * Simple Glance Client to retrieve image to boot it.
+ * Use OpenStack Java SDK's glance-client is more better.
  * @author shida
  *
  */
