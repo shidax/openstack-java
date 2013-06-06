@@ -42,4 +42,8 @@ public class ConnectionProxy {
 	public Channel getReplyChannel() throws IOException {
 		return factory.newConnection().createChannel();
 	}
+	
+	public void close() throws IOException {
+		this.connection.close();
+	}
 }

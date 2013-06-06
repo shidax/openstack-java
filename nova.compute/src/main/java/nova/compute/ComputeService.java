@@ -108,6 +108,20 @@ public class ComputeService implements Runnable {
 		}
 	}
 
+	public static boolean canConnect(ComputeConfig config) {
+		try {
+			ConnectionProxy connect = new ConnectionProxy(config.getRabbitmqHost(),
+					config.getRabbitmqVirtualHost(), config.getRabbitmqUserName(),
+					config.getRabbitmqPassword());
+			connect.connect();
+			connect.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	private ConnectionProxy connect(ComputeConfig config) throws IOException {
 		ConnectionProxy proxy = new ConnectionProxy(config.getRabbitmqHost(),
 				config.getRabbitmqVirtualHost(), config.getRabbitmqUserName(),

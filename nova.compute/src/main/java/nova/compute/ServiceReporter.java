@@ -14,6 +14,7 @@ import nova.compute.model.ComputeNode;
 import nova.compute.model.ModelUtil;
 import nova.compute.rpc.ConductorRpcAPI;
 import nova.compute.rpc.ConnectionProxy;
+import nova.compute.virt.VirtualMachineManager;
 
 /**
  * @author shida
@@ -28,16 +29,18 @@ public class ServiceReporter extends TimerTask {
 	private Host host;
 	private Map<String, Object> service;
 	private Context context;
+	private VirtualMachineManager manager;
 	
 	public ServiceReporter(ConnectionProxy proxy, ComputeConfig config, Context context) throws IOException {
 		this.context = context;
 		this.api = new ConductorRpcAPI(proxy);
 		this.host = new Host(COMPUTE_TOPIC, DEFAULT_BINARY, config.getHost());
+		this.manager = new VirtualMachineManager(config);
 	}
 	
 	public Map<String, Object> init() throws IOException, RpcException {
 		service = api.createService(context, host.toMap());
-		ComputeNode node = new ComputeNode();
+		ComputeNode node = manager.getComputeNode();
 		node.setServiceId(ModelUtil.toInt(service.get("id")));
 		api.createComputeNode(context, node);
 		return service;

@@ -11,6 +11,7 @@ import nova.compute.Context;
 import nova.compute.Host;
 import nova.compute.exception.RpcException;
 import nova.compute.model.ComputeNode;
+import nova.compute.model.Instance;
 
 /**
  * @author shida
@@ -49,6 +50,15 @@ public class ConductorRpcAPI extends BasicRpcAPI {
 		body.put("instance_uuid", uuid);
 		body.put("updates", updates);
 		Message message = this.createMessage(context, "instance_update", body, version);
+		CallResult result = this.call(message);
+		return result.getResult();
+	}
+
+	public Map<String, Object> destroyInstance(Context context, Instance instance) throws IOException, RpcException {
+		String version = "1.16";
+		Map<String, Object> body = new HashMap<String, Object>();
+		body.put("instance", instance);
+		Message message = this.createMessage(context, "instance_destroy", body, version);
 		CallResult result = this.call(message);
 		return result.getResult();
 	}
@@ -106,11 +116,21 @@ public class ConductorRpcAPI extends BasicRpcAPI {
         return call.getResult();
 	}
 
+	public Map<String, Object> updateComputeNode(Context context, ComputeNode values) throws IOException, RpcException {
+		String version = "1.33";
+		Map<String, Object> body = new HashMap<String, Object>();
+		body.put("node", values);
+		body.put("values", values);
+		Message message = this.createMessage(context, "compute_node_update", body, version);
+        CallResult call = this.call(message);
+        return call.getResult();
+	}
+
 	public void destroyComputeNode(Context context, ComputeNode node) throws IOException, RpcException {
 		String version = "1.44";
 		Map<String, Object> body = new HashMap<String, Object>();
 		body.put("node", node);
-		Message message = this.createMessage(context, "compute_node_create", body, version);
+		Message message = this.createMessage(context, "compute_node_delete", body, version);
         this.call(message);
 	}
 

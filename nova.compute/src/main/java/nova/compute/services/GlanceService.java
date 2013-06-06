@@ -44,7 +44,7 @@ public class GlanceService {
 			HttpClient client = builder.build();
 			HttpResponse response = client.execute(method);
 			Image image = new Image();
-			image.setId(imageId); // TODO should be retrive from response.
+			image.setId(imageId); // TODO should be retrieve from response.
 			image.setBody(response.getEntity().getContent());
 			return image;
 		} catch (ClientProtocolException e) {

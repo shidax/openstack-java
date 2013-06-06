@@ -30,6 +30,7 @@ public abstract class BasicRpcAPI {
 
 	public abstract String getRoutingKey();
 
+	@SuppressWarnings("unchecked")
 	public CallResult call(Message message) throws IOException, RpcException {
 		logger.info("Call to openstack api. msg_id is "
 				+ message.getMessageId());
@@ -46,7 +47,8 @@ public abstract class BasicRpcAPI {
 			Gson gson = new Gson();
 			String resultString = consumer.getResult();
 			logger.info("Receive call result: " + resultString);
-			CallResult result = gson.fromJson(resultString, CallResult.class);
+			Map<String, Object> map = gson.fromJson(resultString, Map.class);
+			CallResult result = gson.fromJson((String) map.get("oslo.message"), CallResult.class);
 			if (result.getFailure() != null) {
 				throw new RpcException(result.getFailure());
 			}

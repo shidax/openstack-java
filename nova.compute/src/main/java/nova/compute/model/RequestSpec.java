@@ -3,6 +3,8 @@
  */
 package nova.compute.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,6 +15,7 @@ public class RequestSpec {
 
 	private Image image;
 	private InstanceType instanceType;
+	private List<BlockDeviceMapping> mapping = new ArrayList<BlockDeviceMapping>();
 
 	public Image getImage() {
 		return image;
@@ -38,6 +41,12 @@ public class RequestSpec {
 		Map<String, Object> instanceType = (Map<String, Object>) value
 				.get("instance_type");
 		spec.instanceType = InstanceType.fromMessage(instanceType);
+		List<Map<String, Object>> bdms = (List<Map<String, Object>>) value
+				.get("block_device_mapping");
+		for (Map<String, Object> map : bdms) {
+			BlockDeviceMapping bdm = BlockDeviceMapping.fromMessage(map);
+			spec.mapping.add(bdm);
+		}
 		return spec;
 	}
 }

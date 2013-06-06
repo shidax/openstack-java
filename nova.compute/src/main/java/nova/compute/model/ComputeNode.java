@@ -51,15 +51,15 @@ public class ComputeNode {
     disk_available_least = Column(Integer)
  */
 	private String id;
-	private int vcpus = 0;
+	private long vcpus = 0;
 	@SerializedName("memory_mb")
-	private int memoryMb = 0;
+	private Long memoryMb;
 	@SerializedName("local_gb")
 	private int localGb = 0;
 	@SerializedName("vcpus_used")
 	private int vcpusUsed = 0;
 	@SerializedName("memory_mb_used")
-	private int memoryMbUsed = 0;
+	private long memoryMbUsed = 0;
 	@SerializedName("local_gb_used")
 	private int localGbUsed = 0;
 	@SerializedName("hypervisor_type")
@@ -69,7 +69,7 @@ public class ComputeNode {
 	@SerializedName("hypervisor_hostname")
 	private String hypervisorHostName = "";
 	@SerializedName("free_ram_mb")
-	private int freeRamMb = 0;
+	private long freeRamMb = 0;
 	@SerializedName("free_disk_gb")
 	private int freeDiskGb = 0;
 	@SerializedName("current_workload")
@@ -104,16 +104,16 @@ public class ComputeNode {
 		super();
 	}
 	
-	public int getVcpus() {
+	public long getVcpus() {
 		return vcpus;
 	}
-	public void setVcpus(int vcpus) {
+	public void setVcpus(long vcpus) {
 		this.vcpus = vcpus;
 	}
-	public int getMemoryMb() {
+	public Long getMemoryMb() {
 		return memoryMb;
 	}
-	public void setMemoryMb(int memoryMb) {
+	public void setMemoryMb(Long memoryMb) {
 		this.memoryMb = memoryMb;
 	}
 	public int getLocalGb() {
@@ -128,10 +128,10 @@ public class ComputeNode {
 	public void setVcpusUsed(int vcpuUsed) {
 		this.vcpusUsed = vcpuUsed;
 	}
-	public int getMemoryMbUsed() {
+	public long getMemoryMbUsed() {
 		return memoryMbUsed;
 	}
-	public void setMemoryMbUsed(int memoryMbUsed) {
+	public void setMemoryMbUsed(long memoryMbUsed) {
 		this.memoryMbUsed = memoryMbUsed;
 	}
 	public int getLocalGbUsed() {
@@ -158,10 +158,10 @@ public class ComputeNode {
 	public void setHypervisorHostName(String hypervisorHostName) {
 		this.hypervisorHostName = hypervisorHostName;
 	}
-	public int getFreeRamMb() {
+	public long getFreeRamMb() {
 		return freeRamMb;
 	}
-	public void setFreeRamMb(int freeRamMb) {
+	public void setFreeRamMb(long freeRamMb) {
 		this.freeRamMb = freeRamMb;
 	}
 	public int getFreeDiskGb() {

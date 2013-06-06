@@ -81,9 +81,17 @@ public class ComputeManager {
 		api.updateInstance(context, instance.getUuid(), updates);
 	}
 
+	private void updateInstanceHost(Context context, Instance instance)
+			throws IOException, RpcException {
+		Map<String, Object> updates = new HashMap<String, Object>();
+		updates.put("host", instance.getHost());
+		api.updateInstance(context, instance.getUuid(), updates);
+	}
+
 	@SuppressWarnings("unchecked")
 	public void runInstance(Context context, Map<String, Object> message)
-			throws IOException, ConfigurationException, ServiceException, RpcException {
+			throws IOException, ConfigurationException, ServiceException,
+			RpcException {
 		// TODO This is temporary code.
 		// TODO Resolve glance endpoint from keystone.
 		logger.info("Start to runInstance");
@@ -94,9 +102,11 @@ public class ComputeManager {
 				.get("instance"));
 		Image image = spec.getImage();
 		instance.setImage(image);
-		logger.info("Change instance task_state to spawning");		
+		logger.info("Change instance task_state to spawning");
 		instance.setTaskState("spawning");
+		instance.setHost(config.getHost());
 		updateInstanceState(context, instance);
+		updateInstanceHost(context, instance);
 		if (!diskManager.isCached(image.getId())) {
 			GlanceService service = new GlanceService(context, config);
 			Image downloadImage = service.downloadImage(image.getId());
@@ -107,10 +117,10 @@ public class ComputeManager {
 				instance.getName());
 		try {
 			virtualMachineManager.spawn_with_image(instance, rootDisk);
-			logger.info("Change instance vm_state to active");					
+			logger.info("Change instance vm_state to active");
 			instance.setVmState("active");
-			instance.setTaskState(null);
-			updateInstanceState(context, instance);			
+			instance.setTaskState("none");
+			updateInstanceState(context, instance);
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Failed to spawn instance.", e);
 			instance.setVmState("error");
@@ -120,8 +130,26 @@ public class ComputeManager {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void terminateInstance(Context context, Map<String, Object> message) {
-
+		Map<String, Object> args = (Map<String, Object>) message.get("args");
+		Instance instance = Instance.fromMessage((Map<String, Object>) args
+				.get("instance"));
+		try {
+			virtualMachineManager.destroy(instance);
+			instance.setVmState("deleted");
+			instance.setTaskState("none");
+			updateInstanceState(context, instance);
+			api.destroyInstance(context, instance);
+		} catch (Exception e) {
+			e.printStackTrace();
+			instance.setVmState("error");
+			try {
+				updateInstanceState(context, instance);
+			} catch (IOException | RpcException e1) {
+				e1.printStackTrace();
+			}
+		}
 	}
 
 	public boolean hasMethod(String method) {
@@ -145,5 +173,9 @@ public class ComputeManager {
 			e.printStackTrace();
 			throw e.getTargetException();
 		}
+	}
+	
+	public static boolean checkDriverLive(ComputeConfig config) {
+		return VirtualMachineManager.canConnect(config);
 	}
 }

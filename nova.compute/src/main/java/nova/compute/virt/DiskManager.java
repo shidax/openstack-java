@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import org.apache.commons.io.FileUtils;
+
 import nova.compute.ComputeConfig;
 
 /**
@@ -54,6 +56,7 @@ public class DiskManager {
 		File out = new File(config.getInstanceDirectory() + "/" + IMAGE_PATH + "/" + imageName);
 		BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(out));
 		BufferedInputStream inputStream = new BufferedInputStream(stream);
+		// TODO No good way. But although I use buffer and new IO, the file size increase more than 100mb.
 		try {
 			int b;
 			while ((b = inputStream.read()) >= 0) {
@@ -78,6 +81,7 @@ public class DiskManager {
 		File out = new File(file.getPath() + "/root");
 		Path source = image.toPath();
 		Path dest = out.toPath(); 
+		// TODO Files.copy implements in JDK1.7.
 		Files.copy(source, dest, StandardCopyOption.COPY_ATTRIBUTES);
 		return out.getAbsolutePath();
 	}
@@ -85,7 +89,11 @@ public class DiskManager {
 	public void clearInstanceDirectory(String instanceName) {
 		File file = new File(config.getInstanceDirectory() + "/" + instanceName);
 		if (file.exists()) {
-			file.delete();
+			try {
+				FileUtils.deleteDirectory(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

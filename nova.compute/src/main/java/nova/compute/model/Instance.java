@@ -6,6 +6,9 @@ package nova.compute.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.google.gson.annotations.SerializedName;
+
 import static nova.compute.model.ModelUtil.toLong;
 import static nova.compute.model.ModelUtil.toInt;
 
@@ -16,27 +19,55 @@ import static nova.compute.model.ModelUtil.toInt;
 public class Instance {
 
 	private String uuid;
+	@SerializedName("vm_state")
 	private String vmState;
+	@SerializedName("availability_zone")
 	private String availabilityZone;
+	@SerializedName("ephemeral_gb")
 	private Long ephemeralGb;
+	@SerializedName("root_gb")
 	private Long rootGb;
+	@SerializedName("memory_mb")
 	private Long memoryMb;
 	private Long vcpus;
+	private String host;
+	@SerializedName("user_data")
 	private String userData;
+	@SerializedName("user_id")
 	private String userId;
+	@SerializedName("hostname")
 	private String hostName;
+	@SerializedName("display_description")
 	private String displayDescription;
+	@SerializedName("key_data")
 	private String keyData;
+	@SerializedName("power_state")
 	private Integer powerState;
+	@SerializedName("project_id")
 	private String projectId;
+	@SerializedName("config_drive")
 	private String configDrive;
+	@SerializedName("key_name")
 	private String keyName;
+	@SerializedName("display_name")
 	private String displayName;
+	@SerializedName("task_state")
 	private String taskState;
+	@SerializedName("shotdown_terminate")
 	private Boolean shutdownTerminate;
 	private String name;
+	@SerializedName("image_ref")
 	private Image image;
 	private List<BlockDeviceMapping> blockDeviceMappings = new ArrayList<BlockDeviceMapping>();
+
+	
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
 
 	public String getUuid() {
 		return uuid;
@@ -218,6 +249,7 @@ public class Instance {
 	public static final Instance fromMessage(Map<String, Object> value) {
 		Instance instance = new Instance();
 		instance.uuid = (String) value.get("uuid");
+		instance.host = (String) value.get("host");
 		instance.vmState = (String) value.get("vm_state");
 		instance.availabilityZone = (String) value.get("availability_zone");
 		instance.ephemeralGb = toLong(value.get("ephemeral_gb"));
